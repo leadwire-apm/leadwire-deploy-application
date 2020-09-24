@@ -1,0 +1,46 @@
+FROM centos/systemd
+
+MAINTAINER "Wassim Dhib" <wassim.dhib@leadwire.io>
+
+LABEL org.label-schema.schema-version="application-1.7" \
+    org.label-schema.name="Lead Wire APM" \
+    org.label-schema.vendor="Lead Wire SAS" \
+    org.label-schema.license="Lead Wire Private Use" \
+    org.label-schema.build-date="20200602"
+
+##Update
+#RUN yum -y update
+
+
+## TOOLS
+RUN yum -y install sudo wget 
+
+## JPETSTORE-POSTGRESQL
+RUN wget -q https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+RUN yum -y install pgdg-redhat-repo-latest.noarch.rpm
+RUN yum -y install postgresql96-server postgresql96-contrib ; yum clean all; systemctl enable postgresql-9.6.service
+RUN sudo -u postgres /usr/pgsql-9.6/bin/initdb -D /var/lib/pgsql/9.6/data
+ADD /requirements/application/pg_hba.conf /var/lib/pgsql/9.6/data/pg_hba.conf
+RUN sed -ri 's#.*listen_addresses.*#listen_addresses = \x27*\x27#g' /var/lib/pgsql/9.6/data/postgresql.conf
+RUN rm -f pgdg-centos96-9.6-3.noarch.rpm
+
+## JPETSTORE-TOMCAT
+RUN wget -q https://downloads.apache.org/tomcat/tomcat-8/v8.5.55/bin/apache-tomcat-8.5.55.tar.gz
+RUN groupadd tomcat && useradd -M -s /bin/nologin -g tomcat -d /opt/tomcat tomcat
+RUN mkdir /opt/tomcat && tar xf apache-tomcat-8*tar.gz -C /opt/tomcat --strip-components=1 
+ADD /requirements/application/jpetstore.war /opt/tomcat/webapps/
+RUN wget -q https://jdbc.postgresql.org/download/postgresql-42.2.5.jar 
+RUN mv postgresql-42.2.5.jar /opt/tomcat/lib/
+RUN cd /opt/tomcat && chgrp -R tomcat /opt/tomcat && chmod -R g+r conf && chmod g+x conf && chown -R tomcat webapps/ work/ temp/ logs/
+RUN curl -sL https://search.maven.org/remotecontent?filepath=co/elastic/apm/elastic-apm-agent/1.16.0/elastic-apm-agent-1.16.0.jar -o /opt/tomcat/elastic-apm-agent.jar
+ADD /requirements/application/tomcat.service /etc/systemd/system/
+RUN rm -f apache-tomcat-8*tar.gz
+RUN systemctl enable tomcat.service
+
+RUN yum install -y java-1.8.0-openjdk
+
+EXPOSE 8080
+
+RUN echo "root:master" | chpasswd
+
+CMD ["/usr/sbin/init"]
