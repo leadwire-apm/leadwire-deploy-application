@@ -1,0 +1,16 @@
+version: '3'
+services:
+
+ leadwire-application:
+    image: leadwire/apm-leadwire-application:1.7
+    privileged: true
+    container_name: leadwire-application
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    networks:
+      - leadwire-application
+    ports:
+      - 8080:8080
+networks:
+  leadwire-application:
+
