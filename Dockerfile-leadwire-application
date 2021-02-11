@@ -25,7 +25,7 @@ RUN sed -ri 's#.*listen_addresses.*#listen_addresses = \x27*\x27#g' /var/lib/pgs
 RUN rm -f pgdg-centos96-9.6-3.noarch.rpm
 
 ## JPETSTORE-TOMCAT
-RUN wget -q https://downloads.apache.org/tomcat/tomcat-8/v8.5.55/bin/apache-tomcat-8.5.55.tar.gz
+RUN wget -q https://downloads.apache.org/tomcat/tomcat-8/v8.5.61/bin/apache-tomcat-8.5.61.tar.gz
 RUN groupadd tomcat && useradd -M -s /bin/nologin -g tomcat -d /opt/tomcat tomcat
 RUN mkdir /opt/tomcat && tar xf apache-tomcat-8*tar.gz -C /opt/tomcat --strip-components=1 
 ADD /requirements/application/jpetstore.war /opt/tomcat/webapps/

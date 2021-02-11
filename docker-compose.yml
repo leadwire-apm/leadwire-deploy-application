@@ -2,7 +2,7 @@ version: '3'
 services:
 
  leadwire-application:
-    image: leadwire/apm-leadwire-application:1.7
+    image: leadwire/apm-leadwire-application:1.7.1
     privileged: true
     container_name: leadwire-application
     volumes:
